@@ -1,0 +1,720 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vehicle Transport Booking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a0a;
+    --surface: #111111;
+    --surface2: #181818;
+    --border: rgba(255,255,255,0.08);
+    --border-hover: rgba(255,255,255,0.18);
+    --accent: #e8ff47;
+    --accent-dim: rgba(232,255,71,0.12);
+    --accent-text: #0a0a0a;
+    --text: #f0ede6;
+    --muted: rgba(240,237,230,0.45);
+    --error: #ff6b6b;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Accent glow blob */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(232,255,71,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 40px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+  }
+
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 100px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 80px 0 60px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: end;
+  }
+
+  @media (max-width: 700px) {
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 48px 0 40px; }
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(54px, 8vw, 96px);
+    line-height: 0.92;
+    letter-spacing: 0.02em;
+  }
+
+  .hero-title span {
+    color: var(--accent);
+    display: block;
+  }
+
+  .hero-right {
+    padding-bottom: 8px;
+  }
+
+  .hero-desc {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--muted);
+    margin-bottom: 32px;
+  }
+
+  .stats {
+    display: flex;
+    gap: 32px;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 0 0 60px;
+  }
+
+  /* ── FORM LAYOUT ── */
+  .form-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+    align-items: start;
+    padding-bottom: 100px;
+  }
+
+  @media (max-width: 860px) {
+    .form-layout { grid-template-columns: 1fr; }
+    .sidebar { order: -1; }
+  }
+
+  /* ── FORM ── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 40px;
+  }
+
+  @media (max-width: 500px) {
+    .form-card { padding: 24px; }
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .field-group {
+    margin-bottom: 20px;
+  }
+
+  .field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 500px) {
+    .field-row { grid-template-columns: 1fr; }
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s, background 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input::placeholder { color: rgba(240,237,230,0.2); }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.04);
+  }
+
+  input:hover, select:hover {
+    border-color: var(--border-hover);
+  }
+
+  /* Custom select arrow */
+  .select-wrap {
+    position: relative;
+  }
+
+  .select-wrap::after {
+    content: '↓';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 13px;
+    pointer-events: none;
+  }
+
+  select option {
+    background: #1a1a1a;
+    color: var(--text);
+  }
+
+  /* Booking type cards */
+  .booking-type-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 500px) {
+    .booking-type-group { grid-template-columns: 1fr; }
+  }
+
+  .type-card input[type="radio"] { display: none; }
+
+  .type-card label {
+    display: block;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 0;
+  }
+
+  .type-card input:checked + label {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+  }
+
+  .type-card label:hover {
+    border-color: var(--border-hover);
+  }
+
+  .type-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+
+  .type-desc {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    letter-spacing: 0;
+    font-weight: 300;
+  }
+
+  /* Submit */
+  .submit-btn {
+    width: 100%;
+    background: var(--accent);
+    color: var(--accent-text);
+    border: none;
+    border-radius: 10px;
+    padding: 18px 24px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
+    margin-top: 8px;
+  }
+
+  .submit-btn:hover { opacity: 0.88; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .form-note {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+
+  /* ── SUCCESS STATE ── */
+  .success-state {
+    display: none;
+    text-align: center;
+    padding: 48px 24px;
+  }
+
+  .success-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  .success-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .success-msg {
+    font-size: 15px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .info-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .info-card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+
+  .step-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .step-list li {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--accent-text);
+    background: var(--accent);
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .step-text {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .highlight-card {
+    background: var(--accent-dim);
+    border: 1px solid rgba(232,255,71,0.2);
+    border-radius: 12px;
+    padding: 24px;
+  }
+
+  .highlight-card .info-card-title { color: var(--accent); }
+
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .feature-list li {
+    font-size: 13px;
+    color: var(--muted);
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+
+  .feature-list li::before {
+    content: '→';
+    color: var(--accent);
+    flex-shrink: 0;
+    font-size: 12px;
+    margin-top: 1px;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero { animation: fadeUp 0.6s ease both; }
+  .form-card { animation: fadeUp 0.6s 0.15s ease both; }
+  .sidebar { animation: fadeUp 0.6s 0.25s ease both; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <header>
+    <div class="logo">AutoTransport Pro</div>
+    <div class="badge">Instant Carrier Matching</div>
+  </header>
+
+  <section class="hero">
+    <div class="hero-left">
+      <h1 class="hero-title">
+        Ship Your
+        <span>Vehicle</span>
+        Anywhere.
+      </h1>
+    </div>
+    <div class="hero-right">
+      <p class="hero-desc">Submit your route details and we'll instantly match you with verified carriers who run your exact corridor — no guessing, no phone tag.</p>
+      <div class="stats">
+        <div>
+          <div class="stat-num">800+</div>
+          <div class="stat-label">Verified Carriers</div>
+        </div>
+        <div>
+          <div class="stat-num">48h</div>
+          <div class="stat-label">Avg Response</div>
+        </div>
+        <div>
+          <div class="stat-num">100%</div>
+          <div class="stat-label">Route Coverage</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <div class="form-layout">
+
+    <!-- FORM -->
+    <div class="form-card">
+
+      <div id="form-content">
+
+        <div class="section-label">Your Information</div>
+
+        <div class="field-row field-group">
+          <div class="field-group" style="margin-bottom:0">
+            <label for="customer_name">Full Name</label>
+            <input type="text" id="customer_name" name="customer_name" placeholder="John Smith" required/>
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label for="customer_email">Email Address</label>
+            <input type="email" id="customer_email" name="customer_email" placeholder="john@example.com" required/>
+          </div>
+        </div>
+
+        <div class="section-label">Route Details</div>
+
+        <div class="field-row field-group">
+          <div class="field-group" style="margin-bottom:0">
+            <label for="pickup_zip">Pickup ZIP Code</label>
+            <input type="text" id="pickup_zip" name="pickup_zip" placeholder="e.g. 90210" maxlength="10" required/>
+          </div>
+          <div class="field-group" style="margin-bottom:0">
+            <label for="delivery_zip">Delivery ZIP Code</label>
+            <input type="text" id="delivery_zip" name="delivery_zip" placeholder="e.g. 10001" maxlength="10" required/>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="vehicle_type">Vehicle Type</label>
+          <div class="select-wrap">
+            <select id="vehicle_type" name="vehicle_type" required>
+              <option value="" disabled selected>Select your vehicle type</option>
+              <option value="Sedan">Sedan</option>
+              <option value="SUV">SUV / Crossover</option>
+              <option value="Truck">Pickup Truck</option>
+              <option value="Van">Van / Minivan</option>
+              <option value="Coupe">Coupe / Sports Car</option>
+              <option value="Luxury">Luxury / Exotic</option>
+              <option value="Motorcycle">Motorcycle</option>
+              <option value="Classic">Classic / Antique</option>
+              <option value="Electric">Electric Vehicle</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-label">Service Type</div>
+
+        <div class="booking-type-group">
+          <div class="type-card">
+            <input type="radio" name="booking_type" id="type-standard" value="standard" checked/>
+            <label for="type-standard">
+              <div class="type-title">Standard</div>
+              <div class="type-desc">Matched carriers contact you with rates and availability</div>
+            </label>
+          </div>
+          <div class="type-card">
+            <input type="radio" name="booking_type" id="type-direct" value="direct_access"/>
+            <label for="type-direct">
+              <div class="type-title">Direct Access</div>
+              <div class="type-desc">Receive carrier contact list and reach out on your own terms</div>
+            </label>
+          </div>
+        </div>
+
+        <button type="button" class="submit-btn" id="submit-btn" onclick="submitForm()">
+          Find My Carriers →
+        </button>
+
+        <p class="form-note">No spam. Carrier matching is powered by AI — results delivered within minutes.</p>
+
+      </div>
+
+      <!-- Success state -->
+      <div class="success-state" id="success-state">
+        <div class="success-icon">✓</div>
+        <div class="success-title">Booking Submitted!</div>
+        <p class="success-msg">We're matching your route with the best carriers right now.<br/>Check your email — you'll hear back shortly.</p>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <div class="info-card">
+        <div class="info-card-title">How It Works</div>
+        <ul class="step-list">
+          <li>
+            <div class="step-num">1</div>
+            <div class="step-text">Fill out your route details and vehicle type above</div>
+          </li>
+          <li>
+            <div class="step-num">2</div>
+            <div class="step-text">Our AI scans 800+ carriers to find who runs your exact corridor</div>
+          </li>
+          <li>
+            <div class="step-num">3</div>
+            <div class="step-text">Matched carriers reach out with rates, or you get their contact list directly</div>
+          </li>
+          <li>
+            <div class="step-num">4</div>
+            <div class="step-text">Choose your carrier and schedule your shipment</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="highlight-card">
+        <div class="info-card-title">Why Choose Us</div>
+        <ul class="feature-list">
+          <li>No pre-mapped routes — AI matches by real carrier coverage</li>
+          <li>800+ verified carriers across all 48 continental states</li>
+          <li>Standard and direct access booking options</li>
+          <li>Fast response — most routes matched within the hour</li>
+          <li>Zero obligation to book after receiving quotes</li>
+        </ul>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">Need Help?</div>
+        <p style="font-size:13px;color:var(--muted);line-height:1.7;">Questions about your shipment? Contact us at <span style="color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;">jonathanycong7@gmail.com</span></p>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  <div class="wrapper">
+    &copy; 2026 AutoTransport Pro &nbsp;·&nbsp; Powered by AI carrier matching
+  </div>
+</footer>
+
+<script>
+async function submitForm() {
+  const btn = document.getElementById('submit-btn');
+
+  const fields = {
+    customer_name: document.getElementById('customer_name').value.trim(),
+    customer_email: document.getElementById('customer_email').value.trim(),
+    pickup_zip: document.getElementById('pickup_zip').value.trim(),
+    delivery_zip: document.getElementById('delivery_zip').value.trim(),
+    vehicle_type: document.getElementById('vehicle_type').value,
+    booking_type: document.querySelector('input[name="booking_type"]:checked').value
+  };
+
+  // Basic validation
+  for (const [key, val] of Object.entries(fields)) {
+    if (!val) {
+      alert('Please fill in all fields before submitting.');
+      return;
+    }
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  try {
+    const res = await fetch('https://formspree.io/f/mojzdvwj', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(fields)
+    });
+
+    if (res.ok) {
+      document.getElementById('form-content').style.display = 'none';
+      document.getElementById('success-state').style.display = 'block';
+    } else {
+      btn.disabled = false;
+      btn.textContent = 'Find My Carriers →';
+      alert('Something went wrong. Please try again.');
+    }
+  } catch (e) {
+    btn.disabled = false;
+    btn.textContent = 'Find My Carriers →';
+    alert('Network error. Please check your connection and try again.');
+  }
+}
+</script>
+
+</body>
+</html>
