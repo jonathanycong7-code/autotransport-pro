@@ -681,9 +681,9 @@ async function submitForm() {
     booking_type: document.querySelector('input[name="booking_type"]:checked').value
   };
 
-  // Basic validation
-  for (const [key, val] of Object.entries(fields)) {
-    if (!val) {
+  // Validation
+  for (const [key, value] of Object.entries(fields)) {
+    if (!value) {
       alert('Please fill in all fields before submitting.');
       return;
     }
@@ -693,22 +693,40 @@ async function submitForm() {
   btn.textContent = 'Submitting...';
 
   try {
-    await fetch('https://kirbytajanlangit.app.n8n.cloud/webhook-test/vehicle%20booking', {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(fields)
-    });
+
+    const response = await fetch(
+      'https://kirbytajanlangit.app.n8n.cloud/webhook/vehicle%20booking',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(fields)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error ${response.status}`);
+    }
+
+    const result = await response.text();
+    console.log('n8n response:', result);
 
     document.getElementById('form-content').style.display = 'none';
     document.getElementById('success-state').style.display = 'block';
-  } catch (e) {
+
+  } catch (error) {
+
+    console.error('Submission error:', error);
+
     btn.disabled = false;
     btn.textContent = 'Find My Carriers →';
-    alert('Network error. Please check your connection and try again.');
+
+    alert(
+      'Submission failed.\n\nOpen F12 → Console and send me the error message.'
+    );
   }
 }
 </script>
-
 </body>
 </html>
